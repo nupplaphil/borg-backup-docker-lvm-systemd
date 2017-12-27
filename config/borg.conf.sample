@@ -1,0 +1,10 @@
+SSH_HOST="borg.my-host.com"
+SSH_PATH="/dir/to/backup/"
+SSH_USER="user"
+SSH_PW="password"
+
+BORG_CACHE="/var/cache/borg"
+BORG_COMPRESSION="lz4"
+BORG_CHECK=false
+
+LVM_THIN=thinpool

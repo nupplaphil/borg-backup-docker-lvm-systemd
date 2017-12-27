@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+set -e
+
+script_path="$(dirname "$(readlink --canonicalize-existing "$0")")"
+systemd_path='/etc/systemd/system'
+
+for unit in borg-backup@.service borg-backup@.timer; do
+  file="$script_path/$unit"
+
+  printf "Linking %s\n" "$file"
+  ln --symbolic --force "$file" "$systemd_path/$unit"
+done

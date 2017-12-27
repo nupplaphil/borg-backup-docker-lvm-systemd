@@ -1,0 +1,90 @@
+#!/bin/bash
+
+BORG_PASSCOMMAND="$(cat /opt/backup/.borg-passphrase)"
+
+#Output colors
+NORMAL="\033[0;39m"
+RED="\033[1;31m"
+BLUE="\033[1;34m"
+
+function log() {
+  printf "$BLUE ${BORG_ARCHIVE} > $1 $NORMAL\n" $2
+}
+
+function error() {
+  printf "\n$RED ${BORG_ARCHIVE} >>> ERROR - $1$NORMAL\n" $2
+}
+
+function volume_snap() {
+  VOLUME_SNAP=$(docker volume create -d lvm --opt snapshot=$1 --opt --thinpool=${LVM_THIN} $1_snap)
+  log "Volume snapshot '${VOLUME_SNAP}' for ${VOLUME} created."
+}
+
+function volume_unsnap() {
+  VOLUME_SNAP=$(docker volume remove $1_snap)
+  log "Volume snapshot '${VOLUME_SNAP}' removed."
+}
+
+function volumes_backup() {
+  log "Backup Volumes: '${LVM_VOLUMES[*]}'"
+
+  for VOLUME in ${LVM_VOLUMES[@]}
+  do
+    BACKUP_VOLUMES="${BACKUP_VOLUMES} --mount src=${VOLUME}_snap,target=/borg/data/${BORG_ARCHIVE}/${VOLUME/${BORG_ARCHIVE}_/},volume-opt=nouuid,ro"
+  done
+
+  if [ "${BORG_CHECK}" = true ] ; then
+    BORG_BOOL="-e PRUNE=1"
+  else
+    BORG_BOOL="-e BORG_SKIP_CHECK=1"
+  fi
+
+  docker run --rm \
+    -e SSHFS="${SSH_USER}@${SSH_HOST}:${SSH_PATH}" \
+    -e SSHFS_PASSWORD="${SSH_PW}" \
+    -e COMPRESSION="${BORG_COMPRESSION}" \
+    -e BORG_PASSPHRASE="${BORG_PASSCOMMAND}" \
+    -e ARCHIVE="${BORG_ARCHIVE}-{now:%Y-%m-%d}" \
+    -e BACKUP_DIRS="/borg/data" \
+    ${BORG_BOOL} \
+    ${BACKUP_VOLUMES} \
+    -v ${BORG_CACHE}/${BORG_ARCHIVE}:/root/.cache/borg \
+    --cap-add SYS_ADMIN --device /dev/fuse --security-opt label:disable \
+    pschiffe/borg
+
+  return $?
+}
+
+function backup() {
+  for VOLUME in ${LVM_VOLUMES[@]}
+  do
+    volume_snap ${VOLUME}
+  done
+
+  volumes_backup
+  DOCKER_RETURN=$?
+
+  for VOLUME in ${LVM_VOLUMES[@]}
+  do
+    volume_unsnap ${VOLUME}
+  done
+
+  return ${DOCKER_RETURN}
+}
+
+
+function arguments() {
+  while getopts ":v:volume:a:archive:c:check:" opt;
+  do
+    case "${opt}"
+      in
+      v|volume) LVM_VOLUMES=( "${LVM_VOLUMES[@]}" "${OPTARG}" ); ;;
+      a|archive) BORG_ARCHIVE=${OPTARG};;
+      c|check) BORG_CHECK=true;;
+    esac
+  done
+}
+
+arguments "$@"
+backup
+exit
