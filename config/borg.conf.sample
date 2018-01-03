@@ -5,6 +5,7 @@ SSH_PW="password"
 
 BORG_CACHE="/var/cache/borg"
 BORG_COMPRESSION="lz4"
-BORG_CHECK=false
+BORG_HOSTNAME_IS_UNIQUE=1
+BORG_PASSPHRASE="/opt/backup/.borg-passphrase"
 
 LVM_THIN=thinpool
