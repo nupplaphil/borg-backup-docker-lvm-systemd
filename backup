@@ -46,6 +46,7 @@ function volumes_backup() {
     -e BORG_PASSPHRASE="${BORG_PASSCOMMAND}" \
     -e ARCHIVE="${BORG_ARCHIVE}-{now:%Y-%m-%d}" \
     -e BACKUP_DIRS="/borg/data" \
+    -e BORG_HOSTNAME_IS_UNIQUE=${BORG_HOSTNAME_IS_UNIQUE} \
     ${BORG_BOOL} \
     ${BACKUP_VOLUMES} \
     -v ${BORG_CACHE}/${BORG_ARCHIVE}:/root/.cache/borg \
