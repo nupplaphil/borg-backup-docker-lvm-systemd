@@ -31,27 +31,18 @@ function volumes_backup() {
     BACKUP_VOLUMES="${BACKUP_VOLUMES} --mount src=${VOLUME}_snap,target=/borg/data/${BORG_ARCHIVE}/${VOLUME/${BORG_ARCHIVE}_/},volume-opt=nouuid,ro"
   done
 
-  if [ "${BORG_CHECK}" = true ] ; then
-    BORG_BOOL="-e PRUNE=1"
-  else
-    BORG_BOOL="-e BORG_SKIP_CHECK=1"
-  fi
-
   docker run --rm \
-    -e SSHFS="${SSH_USER}@${SSH_HOST}:${SSH_PATH}" \
-    -e SSHFS_PASSWORD="${SSH_PW}" \
-    -e COMPRESSION="${BORG_COMPRESSION}" \
-    -e BORG_PASSPHRASE="none" \
-    -e BORG_PASSCOMMAND="cat ~/.borg-passphrase" \
+    -e BORG_RELOCATED_REPO_ACCESS_IS_OK=yes \
+    -e BORG_REPO="ssh://${SSH_USER}@${SSH_HOST}:23/./${SSH_PATH}" \
+    -e BORG_PASSCOMMAND="cat /borg/.borg-passphrase" \
     -e ARCHIVE="${BORG_ARCHIVE}-{now:%Y-%m-%d}" \
-    -e BACKUP_DIRS="/borg/data" \
-    -e BORG_HOSTNAME_IS_UNIQUE=${BORG_HOSTNAME_IS_UNIQUE} \
-    ${BORG_BOOL} \
+    -e PRUNE_PREFIX="${BORG_ARCHIVE}-" \
     ${BACKUP_VOLUMES} \
-    -v ${BORG_PASSPHRASE}:/root/.borg-passphrase:ro \
-    -v ${BORG_CACHE}:/root/.cache/borg \
-    --cap-add SYS_ADMIN --device /dev/fuse --security-opt label:disable \
-    pschiffe/borg
+    -v ${PASSPHRASE}:/borg/.borg-passphrase:ro \
+    -v ${BORG_CACHE}:/borg/cache \
+    -v ${BORG_CONFIG}:/borg/config \
+    -v ${BORG_KEYS}:/borg/config/keys \
+    borg-backup
 
   return $?
 }

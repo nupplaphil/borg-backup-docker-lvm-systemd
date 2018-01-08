@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#Output colors
+NORMAL="\033[0;39m"
+RED="\033[1;31m"
+BLUE="\033[1;34m"
+
+function log() {
+  printf "$BLUE ${BORG_ARCHIVE} > $1 $NORMAL\n" $2
+}
+
+function error() {
+  printf "\n$RED ${BORG_ARCHIVE} >>> ERROR - $1$NORMAL\n" $2
+}
+
+function check_repo() {
+  log "Check Repository 'ssh://${SSH_USER}@${SSH_HOST}:23/./${SSH_PATH}"
+
+  docker run --rm \
+    -e BORG_REPO="ssh://${SSH_USER}@${SSH_HOST}:23/./${SSH_PATH}" \
+    -e BORG_PASSCOMMAND="cat /borg/.borg-passphrase" \
+    -e PRUNE_PREFIX="${BORG_ARCHIVE}-" \
+    -v ${PASSPHRASE}:/borg/.borg-passphrase:ro \
+    -v ${BORG_CACHE}:/borg/cache \
+    -v ${BORG_CONFIG}:/borg/config \
+    -v ${BORG_KEYS}:/borg/config/keys \
+    borg-backup check
+
+  return $?
+}
+
+check_repo
+
+exit

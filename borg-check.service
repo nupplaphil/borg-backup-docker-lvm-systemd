@@ -1,13 +1,13 @@
 [Unit]
-Description=Borg Backup Cronjob for %i Docker Volumes
-Wants=borg-backup@%i.timer
+Description=Borg Backup Cronjob for Checks
+Wants=borg-check@%i.timer
 After=docker.service
 Requires=docker.service
 
 [Service]
 Type=oneshot
 EnvironmentFile=/etc/borg/borg.conf
-ExecStart=/opt/backup/backup -a %i
+ExecStart=/opt/backup/check
 
 [Install]
 WantedBy=multi-user.target
