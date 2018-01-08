@@ -1,0 +1,12 @@
+SSH_HOST="borg.my-host.com"
+SSH_PATH="/dir/to/backup"
+SSH_USER="user"
+
+BORG_CACHE="/var/cache/borg"
+BORG_CONFIG="/opt/backup/config"
+BORG_KEYS="/opt/backup/keys"
+BORG_PRUNE=1
+COMPRESSION="lz4"
+PASSPHRASE="/opt/backup/.borg-passphrase"
+
+LVM_THIN=volume_thin

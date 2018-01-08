@@ -31,8 +31,14 @@ function volumes_backup() {
     BACKUP_VOLUMES="${BACKUP_VOLUMES} --mount src=${VOLUME}_snap,target=/borg/data/${BORG_ARCHIVE}/${VOLUME/${BORG_ARCHIVE}_/},volume-opt=nouuid,ro"
   done
 
+  if [ -n "${BORG_PRUNE}" ]; then
+    BORG_PRUNE="-e BORG_PRUNE=1"
+  else
+    BORG_PRUNE=""
+  fi
+
   docker run --rm \
-    -e BORG_RELOCATED_REPO_ACCESS_IS_OK=yes \
+    $BORG_PRUNE \
     -e BORG_REPO="ssh://${SSH_USER}@${SSH_HOST}:23/./${SSH_PATH}" \
     -e BORG_PASSCOMMAND="cat /borg/.borg-passphrase" \
     -e ARCHIVE="${BORG_ARCHIVE}-{now:%Y-%m-%d}" \
@@ -73,6 +79,7 @@ function arguments() {
       v|volume) LVM_VOLUMES=( "${LVM_VOLUMES[@]}" "${OPTARG}" ); ;;
       a|archive) BORG_ARCHIVE=${OPTARG};;
       c|check) BORG_CHECK=true;;
+      p|prune) BORG_PRUNE=1;;
     esac
   done
 }
