@@ -6,7 +6,7 @@ RED="\033[1;31m"
 BLUE="\033[1;34m"
 
 function log() {
-  printf "$BLUE ${BORG_ARCHIVE} > $1 $NORMAL\n" $2
+  printf "$BLUE ${BORG_ARCHIVE} > $1$NORMAL\n" $2
 }
 
 function error() {
@@ -38,7 +38,7 @@ function volumes_backup() {
   fi
 
   docker run --rm \
-    $BORG_PRUNE \
+    ${BORG_PRUNE} \
     -e BORG_REPO="ssh://${SSH_USER}@${SSH_HOST}:23/./${SSH_PATH}" \
     -e BORG_PASSCOMMAND="cat /borg/.borg-passphrase" \
     -e ARCHIVE="${BORG_ARCHIVE}-{now:%Y-%m-%d}" \
@@ -50,7 +50,11 @@ function volumes_backup() {
     -v ${BORG_KEYS}:/borg/config/keys \
     borg-backup
 
-  return $?
+  if [ "$?" -eq 0 ]; then
+    return 0
+  else 
+    return 1
+  fi
 }
 
 function backup() {
@@ -79,7 +83,7 @@ function arguments() {
       v|volume) LVM_VOLUMES=( "${LVM_VOLUMES[@]}" "${OPTARG}" ); ;;
       a|archive) BORG_ARCHIVE=${OPTARG};;
       c|check) BORG_CHECK=true;;
-      p|prune) BORG_PRUNE=1;;
+      p|prune) BORG_PRUNE=true;;
     esac
   done
 }

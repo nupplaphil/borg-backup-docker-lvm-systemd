@@ -12,7 +12,7 @@ ENV KEEP_DAILY="14" \
     KEEP_MONTHLY="6" \
     KEEP_YEARLY="0"
 
-WORKDIR /borg/scripts
+WORKDIR /borg/
 
 RUN apk update && apk upgrade \
       && apk -U add borgbackup openssh-keygen openssh-client \ 

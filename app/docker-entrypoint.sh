@@ -6,9 +6,9 @@ _set_config() {
   export BORG_CONFIG_DIR='/borg/config'
   export BORG_KEYS_DIR='/borg/config/keys'
   if [ -f "$SSHFS_IDENTITY_FILE" ]; then
-    export BORG_RSH="ssh -i $SSHFS_IDENTITY_FILE -o StrictHostKeyChecking=no"
+    export BORG_RSH="ssh -q -i $SSHFS_IDENTITY_FILE -o StrictHostKeyChecking=no"
   else
-    export BORG_RSH="ssh -i /borg/config/keys/id_rsa -o StrictHostKeyChecking=no"
+    export BORG_RSH="ssh -q -i /borg/config/keys/id_rsa -o StrictHostKeyChecking=no"
   fi
 
   if [ -n "${BORG_SHOWRC}" ] && [ "${BORG_SHOWRC}" = "1" ] ; then
@@ -45,7 +45,7 @@ _init() {
     echo >&1 ' warning: Not using encryption. If you want to encrypt files, set $BORG_PASSPHRASE variable.'
   fi
 
-  exec borg "$@" $SHOWRC_CMD $INIT_ENCRYPTION
+  borg "$@" $SHOWRC_CMD $INIT_ENCRYPTION
 }
 
 _create() {
@@ -64,7 +64,7 @@ _create() {
   DEFAULT_ARCHIVE="${HOSTNAME}_$(date +%Y-%m-%d)"
   ARCHIVE="${ARCHIVE:-$DEFAULT_ARCHIVE}"
 
-  exec borg "$@" --stats $SHOWRC_CMD $COMPRESSION_CMD ::"${ARCHIVE}" ${BORG_BACKUP_DIR}
+  borg "$@" --stats $SHOWRC_CMD $COMPRESSION_CMD ::"${ARCHIVE}" ${BORG_BACKUP_DIR}
 
   if [ -n "${BORG_PRUNE}" ]; then
     if [ -n "${PRUNE_PREFIX}" ]; then
@@ -73,7 +73,7 @@ _create() {
       PRUNE_PREFIX=""
     fi
 
-    exec borg prune --stats $SHOWRC_CMD ${PRUNE_PREFIX} --keep-daily=$KEEP_DAILY --keep-weekly=$KEEP_WEEKLY --keep-monthly=$KEEP_MONTHLY --keep-yearly=$KEEP_YEARLY
+    borg prune --stats $SHOWRC_CMD ${PRUNE_PREFIX} --keep-daily=$KEEP_DAILY --keep-weekly=$KEEP_WEEKLY --keep-monthly=$KEEP_MONTHLY --keep-yearly=$KEEP_YEARLY
   fi
 }
 
@@ -86,13 +86,13 @@ _prune() {
     PRUNE_PREFIX=""
   fi
 
-  exec borg "$@" --stats $SHOWRC_CMD ${PRUNE_PREFIX} --keep-daily=${KEEP_DAILY} --keep-weekly=${KEEP_WEEKLY} --keep-monthly=${KEEP_MONTHLY} --keep-yearly=${KEEP_YEARLY}
+  borg "$@" --stats $SHOWRC_CMD ${PRUNE_PREFIX} --keep-daily=${KEEP_DAILY} --keep-weekly=${KEEP_WEEKLY} --keep-monthly=${KEEP_MONTHLY} --keep-yearly=${KEEP_YEARLY}
 }
 
 _param() {
   _set_config
 
-  exec borg "$@"
+  borg "$@"
 }
 
 export BORG_REPO
