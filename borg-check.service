@@ -1,6 +1,6 @@
 [Unit]
 Description=Borg Backup Cronjob for Checks
-Wants=borg-check@%i.timer
+Wants=borg-check.timer
 After=docker.service
 Requires=docker.service
 

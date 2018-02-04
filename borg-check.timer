@@ -4,7 +4,7 @@ Description=Borg Backup Job for %i Docker Volumes
 [Timer]
 OnCalendar=Fri *-*-* 05:00:00
 Persistent=true
-Unit=borg-check@service
+Unit=borg-check.service
 
 [Install]
 WantedBy=multi-user.target
